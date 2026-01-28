@@ -96,5 +96,5 @@ app.post("/hash/response", (req, res) => {
 });
 
 app.listen(process.env.PORT, () => {
-  console.log(`✅ FreePOS backend çalışıyor → ${process.env.PORT}`);
+  console.log(`✅ FreePOS backend çalışıyor → http://localhost:${process.env.PORT}`);
 });
