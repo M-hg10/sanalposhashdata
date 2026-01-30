@@ -98,3 +98,9 @@ app.post("/hash/response", (req, res) => {
 app.listen(process.env.PORT, () => {
   console.log(`✅ FreePOS backend çalışıyor → http://localhost:${process.env.PORT}`);
 });
+// {
+//   "MerchantOrderId": "20240128001",
+//   "Amount": "10000",
+//   "OkUrl": "https://site.com/ok",
+//   "FailUrl": "https://site.com/fail"
+// }
