@@ -19,41 +19,53 @@ function sha1Base64Latin5(value) {
 app.post("/hash/request1", (req, res) => {
   try {
     const {
-      MerchantOrderId,
-      Amount,
-      OkUrl,
-      FailUrl
-    } = req.body;
-
-    if (!MerchantOrderId || !Amount || !OkUrl || !FailUrl) {
-      return res.status(400).json({ error: "Eksik parametre" });
-    }
-
-    const MerchantId = process.env.MERCHANT_ID;
-    const UserName = process.env.USERNAME;
-    const Password = process.env.POS_PASSWORD;
-
-    // 1️⃣ HashedPassword
-    const HashedPassword = sha1Base64Latin5(Password);
-
-    // 2️⃣ HashData
-    const HashData = sha1Base64Latin5(
-      MerchantId +
-      MerchantOrderId +
-      Amount +
-      OkUrl +
-      FailUrl +
-      UserName +
-      HashedPassword
-    );
-
-    res.json({
       MerchantId,
       MerchantOrderId,
       Amount,
       OkUrl,
       FailUrl,
       UserName,
+      Password
+    } = req.body;
+
+    // ENV fallback
+    const _MerchantId = MerchantId || process.env.MERCHANT_ID;
+    const _UserName   = UserName   || process.env.USERNAME;
+    const _Password   = Password   || process.env.POS_PASSWORD;
+
+    if (
+      !_MerchantId ||
+      !MerchantOrderId ||
+      !Amount ||
+      !OkUrl ||
+      !FailUrl ||
+      !_UserName ||
+      !_Password
+    ) {
+      return res.status(400).json({ error: "Eksik parametre" });
+    }
+
+    // 1️⃣ HashedPassword
+    const HashedPassword = sha1Base64Latin5(_Password);
+
+    // 2️⃣ HashData
+    const HashData = sha1Base64Latin5(
+      _MerchantId +
+      MerchantOrderId +
+      Amount +
+      OkUrl +
+      FailUrl +
+      _UserName +
+      HashedPassword
+    );
+
+    res.json({
+      MerchantId: _MerchantId,
+      MerchantOrderId,
+      Amount,
+      OkUrl,
+      FailUrl,
+      UserName: _UserName,
       HashData
     });
 
@@ -71,11 +83,17 @@ app.post("/hash/response", (req, res) => {
       MerchantOrderId,
       ResponseCode,
       OrderId,
-      HashData: BankHash
+      HashData: BankHash,
+      Password
     } = req.body;
 
-    const Password = process.env.POS_PASSWORD;
-    const HashedPassword = sha1Base64Latin5(Password);
+    const _Password = Password || process.env.POS_PASSWORD;
+
+    if (!MerchantOrderId || !ResponseCode || !OrderId || !BankHash || !_Password) {
+      return res.status(400).json({ error: "Eksik parametre" });
+    }
+
+    const HashedPassword = sha1Base64Latin5(_Password);
 
     const CalculatedHash = sha1Base64Latin5(
       MerchantOrderId +
@@ -95,11 +113,15 @@ app.post("/hash/response", (req, res) => {
   }
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`✅ FreePOS backend çalışıyor → http://localhost:${process.env.PORT}`);
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`✅ FreePOS backend çalışıyor → http://localhost:${process.env.PORT || 3000}`);
 });
-// POST http://backend-ip:3000/hash/request1
+
+// POST /hash/request1
 // {
+//   "MerchantId": "496",
+//   "UserName": "apiuser",
+//   "Password": "123456",
 //   "MerchantOrderId": "20240128001",
 //   "Amount": "10000",
 //   "OkUrl": "https://site.com/ok",
