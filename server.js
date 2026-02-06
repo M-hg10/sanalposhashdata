@@ -7,10 +7,15 @@ const iconv = require("iconv-lite");
 const app = express();
 app.use(express.json());
 
-// ISO-8859-9 SHA1 + Base64
 function sha1Base64Latin5(value) {
+  // 1️⃣ ISO-8859-9 encode
   const buffer = iconv.encode(value, "ISO-8859-9");
-  return crypto.createHash("sha1").update(buffer).digest("base64");
+
+  // 2️⃣ SHA1 → RAW binary
+  const sha1Buffer = crypto.createHash("sha1").update(buffer).digest();
+
+  // 3️⃣ Base64
+  return sha1Buffer.toString("base64");
 }
 
 /**
